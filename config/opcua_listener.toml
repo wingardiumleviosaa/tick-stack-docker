@@ -1,0 +1,40 @@
+[agent]
+  metric_batch_size = 1000
+  metric_buffer_limit = 10000
+  #Override default hostname, if empty use os.Hostname()
+  hostname = ""
+  #If set to true, do no set the "host" tag in the telegraf agent.
+  omit_hostname = true
+
+[[outputs.kafka]]
+  brokers = ["${KAFKA_BROKER_SERVER}"]
+  topic = "telegraf"
+  routing_tag = "host"
+  data_format = "json"
+
+[[outputs.influxdb_v2]]
+  urls = ["${INFLUX_SERVER}"]
+  token = "${INFLUX_TOKEN}"
+  organization = "${INFLUX_ORGANIZATION}"
+  bucket = "${INFLUX_BUCKET}"
+
+[[inputs.opcua_listener]]
+  name = "opcua_listener"
+  endpoint = "${OPCUA_ENDPOINT_URL}"
+  connect_timeout = "10s"
+  request_timeout = "5s"
+  subscription_interval = "1000ms"
+  timestamp = "source"
+  security_policy = "None"
+  security_mode = "None"
+  auth_method = "Anonymous"
+
+  [[inputs.opcua_listener.group]]
+    name = "Device1"
+    namespace = "2"
+    identifier_type = "s"
+    default_tags = { asset_id = "00123456" }
+    nodes = [
+      {name="temp1", identifier="testch.Device1.temp1"},
+      {name="humi1", identifier="testch.Device1.humi1"},
+    ]
